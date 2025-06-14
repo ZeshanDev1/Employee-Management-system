@@ -3,6 +3,7 @@ pipeline {
     environment {
         PROJECT_NAME = 'employee-app-jenkins'
         COMPOSE_FILE = 'docker-compose.jenkins.yml'
+        TEST_REPO = 'https://github.com/YOUR_USERNAME/employee-tests.git'
     }
     stages {
         stage('Build and Deploy') {
@@ -22,13 +23,32 @@ pipeline {
                 }
             }
         }
+
+        stage('Test') {
+            steps {
+                script {
+                    sh """
+                        echo "🧪 Cloning test repo..."
+                        rm -rf employee-tests
+                        git clone ${TEST_REPO}
+
+                        echo "🔧 Building test container..."
+                        cd employee-tests
+                        docker build -t employee-tests-image .
+
+                        echo "🚀 Running tests..."
+                        docker run --rm employee-tests-image
+                    """
+                }
+            }
+        }
     }
     post {
         success {
-            echo "✅ Deployment successful! Check the app on port 3001."
+            echo "✅ Pipeline completed successfully."
         }
         failure {
-            echo "❌ Deployment failed. Please check logs."
+            echo "❌ Pipeline failed. Check Jenkins logs."
         }
     }
 }
