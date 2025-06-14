@@ -1,16 +1,16 @@
 pipeline {
     agent any
+
     environment {
         PROJECT_NAME = 'employee-app-jenkins'
         COMPOSE_FILE = 'docker-compose.jenkins.yml'
-        TEST_REPO = 'https://github.com/ZeshanDev1/Employee-tests.git'
     }
 
     stages {
         stage('Build and Deploy') {
             steps {
                 script {
-                    sh """
+                    sh '''
                         echo "🧹 Cleaning old containers..."
                         docker rm -f server_jenkins || true
                         docker rm -f client_jenkins || true
@@ -20,7 +20,7 @@ pipeline {
 
                         echo "🚀 Starting new deployment..."
                         docker-compose -p ${PROJECT_NAME} -f ${COMPOSE_FILE} up -d --build
-                    """
+                    '''
                 }
             }
         }
@@ -28,15 +28,24 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    sh """
-                        echo "📥 Cloning test repo..."
-                        rm -rf employee-tests
-                        git clone ${TEST_REPO}
+                    sh '''
+                        echo 📥 Cloning test repo...
 
-                        echo "🔍 Running Selenium tests using Docker..."
-                        docker build -t selenium-tests ./employee-tests
+                        # 🧹 Remove existing test folder if present
+                        if [ -d "Employee-tests" ]; then
+                            echo "🧹 Removing existing Employee-tests directory..."
+                            rm -rf Employee-tests
+                        fi
+
+                        git clone https://github.com/ZeshanDev1/Employee-tests.git
+                        cd Employee-tests
+
+                        echo 🐳 Building Docker test container...
+                        docker build -t selenium-tests .
+
+                        echo 🧪 Running Selenium tests...
                         docker run --rm selenium-tests
-                    """
+                    '''
                 }
             }
         }
