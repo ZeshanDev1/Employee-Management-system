@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_NAME = 'employee-app-jenkins'
-        COMPOSE_FILE = 'docker-compose.jenkins.yml'
+        COMPOSE_PROJECT_NAME = 'employee-app-jenkins'
     }
 
     stages {
@@ -11,15 +10,15 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        echo "🧹 Cleaning old containers..."
+                        echo 🧹 Cleaning old containers...
                         docker rm -f server_jenkins || true
                         docker rm -f client_jenkins || true
 
-                        echo "📦 Stopping previous deployment..."
-                        docker-compose -p ${PROJECT_NAME} -f ${COMPOSE_FILE} down
+                        echo 📦 Stopping previous deployment...
+                        docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.jenkins.yml down
 
-                        echo "🚀 Starting new deployment..."
-                        docker-compose -p ${PROJECT_NAME} -f ${COMPOSE_FILE} up -d --build
+                        echo 🚀 Starting new deployment...
+                        docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.jenkins.yml up -d --build
                     '''
                 }
             }
@@ -30,13 +29,7 @@ pipeline {
                 script {
                     sh '''
                         echo 📥 Cloning test repo...
-
-                        # 🧹 Remove existing test folder if present
-                        if [ -d "Employee-tests" ]; then
-                            echo "🧹 Removing existing Employee-tests directory..."
-                            rm -rf Employee-tests
-                        fi
-
+                        rm -rf Employee-tests || true
                         git clone https://github.com/ZeshanDev1/Employee-tests.git
                         cd Employee-tests
 
