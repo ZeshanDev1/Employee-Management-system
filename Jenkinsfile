@@ -24,21 +24,16 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Selenium Tests') {
             steps {
                 script {
-                    sh '''
-                        echo 📥 Cloning test repo...
-                        rm -rf Employee-tests || true
-                        git clone https://github.com/ZeshanDev1/Employee-tests.git
-                        cd Employee-tests
-
-                        echo 🐳 Building Docker test container...
-                        docker build -t selenium-tests .
-
-                        echo 🧪 Running Selenium tests...
-                        docker run --rm selenium-tests
-                    '''
+                    echo "🧪 Running Selenium test container..."
+                    dir('employee-tests') {
+                        sh '''
+                            docker build -t selenium-tests .
+                            docker run --rm selenium-tests
+                        '''
+                    }
                 }
             }
         }
@@ -46,11 +41,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Build & Test pipeline completed successfully!"
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo "❌ Build or Test stage failed. Check logs!"
+            echo "❌ Pipeline failed. Check logs above."
         }
     }
 }
-
