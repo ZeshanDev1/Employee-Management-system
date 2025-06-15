@@ -27,24 +27,24 @@ pipeline {
         stage('Run Selenium Tests') {
             steps {
                 script {
-                    echo "🧪 Running Selenium test container..."
-                    dir('employee-tests') {
-                        sh '''
-                            docker build -t selenium-tests .
-                            docker run --rm selenium-tests
-                        '''
-                    }
+                    echo '🧪 Running Selenium test container...'
+
+                    // Build and run the test container from the root (your Employee-tests repo structure)
+                    sh '''
+                        docker build -t selenium-tests .
+                        docker run --rm selenium-tests
+                    '''
                 }
             }
         }
     }
 
     post {
-        success {
-            echo "✅ Pipeline completed successfully!"
+        always {
+            echo '✅ Pipeline completed (even if tests failed)'
         }
         failure {
-            echo "❌ Pipeline failed. Check logs above."
+            echo '❌ Pipeline failed. Check logs above.'
         }
     }
 }
