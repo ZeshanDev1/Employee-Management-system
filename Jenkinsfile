@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = 'employee-app-jenkins'
+        TEST_REPO_URL = 'https://github.com/ZeshanDev1/Employee-tests.git'
     }
 
     stages {
@@ -27,10 +28,14 @@ pipeline {
         stage('Run Selenium Tests') {
             steps {
                 script {
-                    echo '🧪 Running Selenium test container...'
+                    echo '🧪 Cloning and running Selenium tests...'
 
-                    // Build and run the test container from the root (your Employee-tests repo structure)
                     sh '''
+                        echo 📥 Cloning test repo...
+                        git clone $TEST_REPO_URL employee-tests
+
+                        echo 🧪 Building and running Selenium test container...
+                        cd employee-tests
                         docker build -t selenium-tests .
                         docker run --rm selenium-tests
                     '''
