@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         COMPOSE_PROJECT_NAME = 'employee-app-deploy'
+        TEST_REPO_URL = 'https://github.com/ZeshanDev1/Employee-tests.git'
     }
 
     stages {
@@ -11,6 +12,12 @@ pipeline {
                 script {
                     sh '''
                         echo 🧹 Cleaning up old containers...
+
+                        # Force remove any containers by name
+                        docker rm -f server_jenkins || true
+                        docker rm -f client_jenkins || true
+
+                        # Stop docker-compose project if already running
                         docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.jenkins.yml down || true
                     '''
                 }
@@ -27,17 +34,33 @@ pipeline {
                 }
             }
         }
+
+        stage('Run Selenium Tests') {
+            steps {
+                script {
+                    echo '🧪 Cloning and running Selenium tests...'
+
+                    sh '''
+                        echo 📥 Cloning test repo...
+                        rm -rf employee-tests
+                        git clone $TEST_REPO_URL employee-tests
+
+                        echo 🧪 Building and running Selenium test container...
+                        cd employee-tests
+                        docker build -t selenium-tests .
+                        docker run --rm selenium-tests
+                    '''
+                }
+            }
+        }
     }
 
     post {
-        success {
-            echo '✅ Application deployed successfully!'
+        always {
+            echo '🏁 Pipeline execution complete.'
         }
         failure {
             echo '❌ Deployment failed.'
-        }
-        always {
-            echo '🏁 Pipeline execution complete.'
         }
     }
 }
