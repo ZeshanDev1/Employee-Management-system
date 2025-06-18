@@ -17,7 +17,6 @@ export default function Edit() {
 
       try {
         const response = await fetch(`http://54.87.76.62:5000/record/${id}`);
-
         if (!response.ok) {
           const message = `An error occurred: ${response.statusText}`;
           window.alert(message);
@@ -25,7 +24,6 @@ export default function Edit() {
         }
 
         const record = await response.json();
-
         if (!record) {
           window.alert(`Record with id ${id} not found`);
           navigate("/");
@@ -50,8 +48,8 @@ export default function Edit() {
 
     const editedPerson = { ...form };
 
-    const response = await fetch(`http://54.87.76.62:5000/record/update/${params.id}`, {
-      method: "POST",
+    const response = await fetch(`http://54.87.76.62:5000/record/${params.id}`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
@@ -64,7 +62,9 @@ export default function Edit() {
       return;
     }
 
+    // ✅ Force the homepage to reload to show updated data
     navigate("/");
+    window.location.reload();
   }
 
   return (

@@ -1,98 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const API_BASE_URL = "http://54.87.76.62:5000"; // Replace with process.env.REACT_APP_YOUR_HOSTNAME if using .env
-
-const Record = (props) => {
-  return (
-    <tr>
-      <td>{props.record.name}</td>
-      <td>{props.record.position}</td>
-      <td>{props.record.level}</td>
-      <td>
-        <Link className="btn btn-link" to={`/edit/${props.record._id}`}>
-          Edit
-        </Link>{" "}
-        |
-        <button
-          className="btn btn-link"
-          onClick={() => props.deleteRecord(props.record._id)}
-        >
-          Delete
-        </button>
-      </td>
-    </tr>
-  );
-};
 
 export default function RecordList() {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
-    async function getRecords() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/record/`);
-        if (!response.ok) {
-          throw new Error(`An error occurred: ${response.statusText}`);
-        }
-
-        const records = await response.json();
-        setRecords(records);
-      } catch (error) {
-        window.alert(error.message);
+    async function fetchRecords() {
+      const res = await fetch("http://54.87.76.62:5000/record");
+      if (!res.ok) {
+        window.alert("Error fetching records");
+        return;
       }
+      const data = await res.json();
+      setRecords(data);
     }
 
-    getRecords();
+    fetchRecords();
   }, []);
 
-  async function deleteRecord(id) {
-    const result = window.confirm("Will this employee be removed from the list?");
-    if (!result) return;
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/record/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Delete failed: ${response.statusText}`);
-      }
-
-      const deleted = await response.json();
-      console.log("Deleted:", deleted);
-
-      const newRecords = records.filter((record) => record._id !== id);
-      setRecords(newRecords);
-    } catch (error) {
-      console.error("Error deleting record:", error);
-      window.alert("Failed to delete the record.");
-    }
-  }
-
-  function recordList() {
-    return records.map((record) => (
-      <Record
-        key={record._id}
-        record={record}
-        deleteRecord={deleteRecord}
-      />
-    ));
+  function recordRow(record) {
+    return (
+      <tr key={record._id}>
+        <td>{record.name}</td>
+        <td>{record.position}</td>
+        <td>{record.level}</td>
+        <td>
+          <Link className="btn btn-link" to={`/edit/${record._id}`}>Edit</Link> |
+          <Link className="btn btn-link" to={`/delete/${record._id}`}>Delete</Link>
+        </td>
+      </tr>
+    );
   }
 
   return (
     <div>
-      <h3 className="ps-2">Record List</h3>
-      <table className="table table-striped" style={{ marginTop: 20 }}>
+      <h3>Employee Record List</h3>
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>Name</th>
             <th>Position</th>
             <th>Level</th>
-            <th>Action</th>
+            <th>Actions</th>
           </tr>
         </thead>
-        <tbody>{recordList()}</tbody>
+        <tbody>{records.map(recordRow)}</tbody>
       </table>
     </div>
   );

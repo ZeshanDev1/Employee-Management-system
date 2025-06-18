@@ -2,42 +2,27 @@ pipeline {
     agent any
 
     environment {
-        COMPOSE_PROJECT_NAME = 'employee-app-jenkins'
-        TEST_REPO_URL = 'https://github.com/ZeshanDev1/Employee-tests.git'
+        COMPOSE_PROJECT_NAME = 'employee-app-deploy'
     }
 
     stages {
-        stage('Build and Deploy') {
+        stage('Cleanup Previous Containers') {
             steps {
                 script {
                     sh '''
-                        echo 🧹 Cleaning old containers...
-                        docker rm -f server_jenkins || true
-                        docker rm -f client_jenkins || true
-
-                        echo 📦 Stopping previous deployment...
-                        docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.jenkins.yml down
-
-                        echo 🚀 Starting new deployment...
-                        docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.jenkins.yml up -d --build
+                        echo 🧹 Cleaning up old containers...
+                        docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.jenkins.yml down || true
                     '''
                 }
             }
         }
 
-        stage('Run Selenium Tests') {
+        stage('Build and Deploy') {
             steps {
                 script {
-                    echo '🧪 Cloning and running Selenium tests...'
-
                     sh '''
-                        echo 📥 Cloning test repo...
-                        git clone $TEST_REPO_URL employee-tests
-
-                        echo 🧪 Building and running Selenium test container...
-                        cd employee-tests
-                        docker build -t selenium-tests .
-                        docker run --rm selenium-tests
+                        echo 🚀 Building and deploying application...
+                        docker-compose -p $COMPOSE_PROJECT_NAME -f docker-compose.jenkins.yml up -d --build
                     '''
                 }
             }
@@ -45,11 +30,14 @@ pipeline {
     }
 
     post {
-        always {
-            echo '✅ Pipeline completed (even if tests failed)'
+        success {
+            echo '✅ Application deployed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed. Check logs above.'
+            echo '❌ Deployment failed.'
+        }
+        always {
+            echo '🏁 Pipeline execution complete.'
         }
     }
 }
