@@ -5,9 +5,9 @@ services:
     container_name: client_jenkins
     build: ./client
     ports:
-      - "3001:3000"  # Host 3001 → container 3000
+      - "3001:3000"
     environment:
-      - REACT_APP_YOUR_HOSTNAME=http://54.87.76.62:5001
+      - REACT_APP_YOUR_HOSTNAME=http://localhost:5001
     depends_on:
       - server_jenkins
 
@@ -15,11 +15,7 @@ services:
     container_name: server_jenkins
     build: ./server
     ports:
-      - "5001:5000"  # Host 5001 → container 5000
+      - "5001:5000"
     env_file:
-      - ./server/.env
-    volumes:
-      - dbdata:/data/db
-
-volumes:
-  dbdata:
+      - ./server/.env.sample
+    restart: unless-stopped
