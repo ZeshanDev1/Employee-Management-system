@@ -1,5 +1,4 @@
 // record.js
-import React from "react";
 import { Link } from "react-router-dom";
 
 // A reusable row component for each employee record
